@@ -91,7 +91,7 @@ jobs:
           ls -al
 
       - name: Build Docker image
-        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${BRANCH_NAME}-latest . --load
+        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${BRANCH_NAME}-latest --load .
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${BRANCH_NAME}-latest
