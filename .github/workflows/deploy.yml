@@ -89,8 +89,7 @@ jobs:
           ls -al
 
       - name: Build Docker image
-        run: |
-          docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${{ github.ref_name }}-latest --load .
+        run: docker build build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${{ github.ref_name }}-latest --load .
 
       - name: Push Docker image
         run: |
