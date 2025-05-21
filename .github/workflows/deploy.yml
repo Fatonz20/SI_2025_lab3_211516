@@ -78,11 +78,6 @@ jobs:
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Sanitize branch name for Docker tag
-        run: |
-          BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr -cd '[:alnum:]-._' | tr '[:upper:]' '[:lower:]')
-          echo "SANITIZED_BRANCH=${BRANCH_NAME}" >> $GITHUB_ENV
-
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${{ env.SANITIZED_BRANCH }}-latest .
 
