@@ -3,7 +3,7 @@ name: Lint, Build, Deploy HTML, and Push Docker Image
 on:
   push:
     branches:
-      - '**'
+      - "**"
 
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
   build-htmls:
     runs-on: ubuntu-latest
     needs: lint-html
-    if: github.ref_name == 'master'
+    if: startsWith(github.ref, 'refs/heads/')
     steps:
       - uses: actions/checkout@v3
 
@@ -43,7 +43,7 @@ jobs:
   deploy-pages:
     runs-on: ubuntu-latest
     needs: build-htmls
-    if: github.ref_name == 'master'
+    if: startsWith(github.ref, 'refs/heads/')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -54,7 +54,7 @@ jobs:
           name: output-html
           path: created_htmls
 
-      - name: List downloaded stuff
+      - name: List downloaded files
         run: ls -al created_htmls
 
       - name: Setup Pages
@@ -72,17 +72,19 @@ jobs:
   docker-push:
     runs-on: ubuntu-latest
     needs: lint-html
-    env:
-      BRANCH_NAME: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
 
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
+      - name: Sanitize branch name for Docker tag
+        run: |
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr -cd '[:alnum:]-._' | tr '[:upper:]' '[:lower:]')
+          echo "SANITIZED_BRANCH=${BRANCH_NAME}" >> $GITHUB_ENV
+
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${BRANCH_NAME}-latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${{ env.SANITIZED_BRANCH }}-latest .
 
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${BRANCH_NAME}-latest
-
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/si-2025-lab3:${{ env.SANITIZED_BRANCH }}-latest
